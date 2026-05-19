@@ -151,7 +151,7 @@ export default function OnboardingPage() {
 
         {/* Chat pane — 55% on desktop */}
         <div className="order-1 lg:order-2 lg:w-[55%] min-h-0 overflow-hidden flex-1 lg:flex-none">
-          <OnboardingChat onFormUpdate={onFormUpdate} />
+          <OnboardingChat onFormUpdate={onFormUpdate} formData={formData as unknown as Record<string, string>} />
         </div>
       </main>
     </div>

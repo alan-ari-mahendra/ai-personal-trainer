@@ -28,6 +28,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     message = body.message;
     if (body.mode === 'onboarding') mode = 'onboarding';
+    // Onboarding sends conversation history + current form state from client
+    var clientHistory: Array<{ role: string; content: string }> = body.history ?? [];
+    var formState: Record<string, string> | undefined = body.formState;
   } catch {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -47,12 +50,33 @@ export async function POST(req: Request) {
     });
   }
 
+  let systemContent = isOnboarding ? ONBOARDING_PROMPT : SYSTEM_PROMPT;
+
+  // Append current form state so JASON knows what's already filled
+  if (isOnboarding && formState) {
+    const filled = Object.entries(formState)
+      .filter(([, v]) => v && v.trim())
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+    if (filled) {
+      systemContent += `\n\nFORM STATE SAAT INI (sudah diisi, JANGAN tanya ulang):\n${filled}`;
+    }
+  }
+
   const messages: ChatMessage[] = [
-    { role: 'system', content: isOnboarding ? ONBOARDING_PROMPT : SYSTEM_PROMPT },
+    { role: 'system', content: systemContent },
   ];
 
-  if (!isOnboarding) {
-    // Fetch last 20 messages for context
+  if (isOnboarding) {
+    // Use client-sent conversation history for onboarding (not stored in DB)
+    messages.push(
+      ...clientHistory.map((h) => ({
+        role: h.role,
+        content: h.content,
+      })),
+    );
+  } else {
+    // Fetch last 20 messages from DB for normal chat
     const history = await db.select({
       role: chatHistory.role,
       content: chatHistory.content,

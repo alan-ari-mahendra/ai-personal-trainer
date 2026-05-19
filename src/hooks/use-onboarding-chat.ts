@@ -22,6 +22,27 @@ function generateId(): string {
 const FORM_DATA_REGEX =
   /---FORM_DATA---\n?([\s\S]*?)\n?---END_FORM_DATA---\n?/;
 
+/** Strip FORM_DATA markers from content for display (works mid-stream too) */
+function stripMarkers(raw: string): string {
+  // Full block present — remove it
+  if (FORM_DATA_REGEX.test(raw)) {
+    return raw.replace(FORM_DATA_REGEX, '').trim();
+  }
+  // Partial marker at end (still streaming) — hide from ---FORM_DATA--- onward
+  const markerStart = raw.indexOf('---FORM_DATA---');
+  if (markerStart !== -1) {
+    return raw.slice(0, markerStart).trim();
+  }
+  // Partial "---" building up at end
+  if (raw.endsWith('-') || raw.endsWith('--') || raw.endsWith('---')) {
+    const dashStart = raw.lastIndexOf('---');
+    if (dashStart > 0 && raw.length - dashStart <= 16) {
+      return raw.slice(0, dashStart).trim();
+    }
+  }
+  return raw;
+}
+
 function extractFormData(raw: string): {
   displayContent: string;
   formUpdates: Record<string, unknown> | undefined;
@@ -42,10 +63,12 @@ function extractFormData(raw: string): {
 
 export function useOnboardingChat(
   onFormUpdate: (updates: Record<string, unknown>) => void,
+  currentFormData?: Record<string, string>,
 ): UseOnboardingChatReturn {
   const [messages, setMessages] = useState<OnboardingMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<OnboardingMessage[]>([]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -60,11 +83,21 @@ export function useOnboardingChat(
 
       const assistantId = generateId();
 
-      setMessages((prev) => [
-        ...prev,
-        userMessage,
-        { id: assistantId, role: 'assistant', content: '' },
-      ]);
+      // Build last 6 conversation turns for context
+      const history = messagesRef.current
+        .filter((m) => m.content)
+        .map((m) => ({ role: m.role as string, content: m.content }))
+        .slice(-6);
+
+      setMessages((prev) => {
+        const next: OnboardingMessage[] = [
+          ...prev,
+          userMessage,
+          { id: assistantId, role: 'assistant' as const, content: '' },
+        ];
+        messagesRef.current = next;
+        return next;
+      });
       setIsStreaming(true);
 
       abortRef.current?.abort();
@@ -74,10 +107,18 @@ export function useOnboardingChat(
       let fullContent = '';
 
       try {
+        console.log('[Onboarding] Sending:', trimmed);
+        console.log('[Onboarding] History:', history);
+
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: trimmed, mode: 'onboarding' }),
+          body: JSON.stringify({
+            message: trimmed,
+            mode: 'onboarding',
+            history,
+            formState: currentFormData,
+          }),
           credentials: 'include',
           signal: controller.signal,
         });
@@ -111,11 +152,12 @@ export function useOnboardingChat(
               const parsed = JSON.parse(data);
               if (parsed.content) {
                 fullContent += parsed.content;
-                // During streaming show raw content (markers will be cleaned up after)
+                // Show content with markers stripped in real-time
+                const display = stripMarkers(fullContent);
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === assistantId
-                      ? { ...msg, content: fullContent }
+                      ? { ...msg, content: display }
                       : msg,
                   ),
                 );
@@ -127,19 +169,24 @@ export function useOnboardingChat(
         }
 
         // Stream complete — extract form data and clean display content
+        console.log('[Onboarding] Raw response:', fullContent);
         const { displayContent, formUpdates } = extractFormData(fullContent);
+        console.log('[Onboarding] Parsed form updates:', formUpdates);
+        console.log('[Onboarding] Display content:', displayContent);
 
         if (formUpdates) {
           onFormUpdate(formUpdates);
         }
 
-        setMessages((prev) =>
-          prev.map((msg) =>
+        setMessages((prev) => {
+          const next = prev.map((msg) =>
             msg.id === assistantId
               ? { ...msg, content: displayContent, formUpdates }
               : msg,
-          ),
-        );
+          );
+          messagesRef.current = next;
+          return next;
+        });
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
 

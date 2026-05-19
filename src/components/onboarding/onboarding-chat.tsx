@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import {
   useOnboardingChat,
   type OnboardingMessage,
@@ -11,6 +11,7 @@ import {
 
 interface OnboardingChatProps {
   onFormUpdate: (updates: Record<string, unknown>) => void;
+  formData?: Record<string, string>;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -58,9 +59,9 @@ const GREETING: OnboardingMessage = {
     'Halo! Gue JASON. \u{1F44B} Ceritain aja tentang kamu \u2014 berat badan, tinggi, pengalaman olahraga, dan tujuan fitness kamu. Nanti gue bantu isi formnya otomatis!',
 };
 
-export function OnboardingChat({ onFormUpdate }: OnboardingChatProps) {
+export function OnboardingChat({ onFormUpdate, formData }: OnboardingChatProps) {
   const { messages, isStreaming, sendMessage } =
-    useOnboardingChat(onFormUpdate);
+    useOnboardingChat(onFormUpdate, formData);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -115,8 +116,8 @@ export function OnboardingChat({ onFormUpdate }: OnboardingChatProps) {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="space-y-4 p-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div className="space-y-4 p-6">
           {allMessages.map((msg) => (
             <MessageBubble key={msg.id} message={msg} />
           ))}
@@ -142,7 +143,7 @@ export function OnboardingChat({ onFormUpdate }: OnboardingChatProps) {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input area */}
       <div className="border-t border-zinc-800 p-4">
