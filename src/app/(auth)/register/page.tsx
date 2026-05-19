@@ -31,7 +31,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push('/chat');
+    router.push('/onboarding');
   }
 
   return (

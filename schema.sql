@@ -16,6 +16,13 @@ CREATE TABLE users (
                     CHECK (goal IN ('bulking', 'cutting', 'maintenance', 'health')),
     activity_level  VARCHAR(20) DEFAULT 'moderate'
                     CHECK (activity_level IN ('sedentary', 'light', 'moderate', 'active', 'very_active')),
+    height_cm       DECIMAL(5,1),
+    weight_kg       DECIMAL(5,2),
+    age             INTEGER,
+    gender          VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
+    exercise_history TEXT,
+    injuries        TEXT,
+    onboarding_completed BOOLEAN DEFAULT FALSE,
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );

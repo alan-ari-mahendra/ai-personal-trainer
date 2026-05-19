@@ -1,4 +1,4 @@
-import { getGroq, GROQ_MODEL, SYSTEM_PROMPT } from '@/lib/groq';
+import { getGroq, GROQ_MODEL, SYSTEM_PROMPT, ONBOARDING_PROMPT } from '@/lib/groq';
 import { getToolDefinitions } from '@/lib/tool-definitions';
 import { executeToolCall } from '@/lib/tool-executor';
 import { getUserId } from '@/lib/api-auth';
@@ -19,10 +19,13 @@ export async function POST(req: Request) {
   let userId: string;
   let message: string;
 
+  let mode: 'chat' | 'onboarding' = 'chat';
+
   try {
     userId = getUserId(req);
     const body = await req.json();
     message = body.message;
+    if (body.mode === 'onboarding') mode = 'onboarding';
   } catch {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -31,44 +34,54 @@ export async function POST(req: Request) {
     return Response.json({ error: 'message is required' }, { status: 400 });
   }
 
-  // Save user message to chat history
-  await sql`
-    INSERT INTO chat_history (user_id, role, content)
-    VALUES (${userId}, 'user', ${message})
-  `;
+  const isOnboarding = mode === 'onboarding';
 
-  // Fetch last 20 messages for context
-  const history = await sql`
-    SELECT role, content FROM chat_history
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC LIMIT 20
-  `;
+  // Only save to chat_history in normal chat mode
+  if (!isOnboarding) {
+    await sql`
+      INSERT INTO chat_history (user_id, role, content)
+      VALUES (${userId}, 'user', ${message})
+    `;
+  }
 
   const messages: ChatMessage[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    ...history.reverse().map((h) => ({
-      role: h.role as string,
-      content: h.content as string,
-    })),
+    { role: 'system', content: isOnboarding ? ONBOARDING_PROMPT : SYSTEM_PROMPT },
   ];
+
+  if (!isOnboarding) {
+    // Fetch last 20 messages for context
+    const history = await sql`
+      SELECT role, content FROM chat_history
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC LIMIT 20
+    `;
+    messages.push(
+      ...history.reverse().map((h) => ({
+        role: h.role as string,
+        content: h.content as string,
+      })),
+    );
+  }
+
+  // Add current user message
+  messages.push({ role: 'user', content: message });
 
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const finalContent = await processWithToolLoop(
-          messages,
-          userId,
-          controller,
-          encoder,
-        );
+        const finalContent = isOnboarding
+          ? await processOnboardingStream(messages, controller, encoder)
+          : await processWithToolLoop(messages, userId, controller, encoder);
 
-        // Save assistant response
-        await sql`
-          INSERT INTO chat_history (user_id, role, content, model_used)
-          VALUES (${userId}, 'assistant', ${finalContent}, ${GROQ_MODEL})
-        `;
+        // Only save to chat_history in normal chat mode
+        if (!isOnboarding) {
+          await sql`
+            INSERT INTO chat_history (user_id, role, content, model_used)
+            VALUES (${userId}, 'assistant', ${finalContent}, ${GROQ_MODEL})
+          `;
+        }
 
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         controller.close();
@@ -200,4 +213,35 @@ async function processWithToolLoop(
   }
 
   return finalContent;
+}
+
+/**
+ * Simple streaming for onboarding — no tools, just stream text.
+ */
+async function processOnboardingStream(
+  messages: ChatMessage[],
+  controller: ReadableStreamDefaultController,
+  encoder: TextEncoder,
+): Promise<string> {
+  const groq = getGroq();
+  const stream = await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: messages as Parameters<
+      typeof groq.chat.completions.create
+    >[0]['messages'],
+    stream: true,
+    temperature: 0.7,
+  });
+
+  let content = '';
+  for await (const chunk of stream) {
+    const delta = chunk.choices[0]?.delta?.content;
+    if (delta) {
+      content += delta;
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`),
+      );
+    }
+  }
+  return content;
 }

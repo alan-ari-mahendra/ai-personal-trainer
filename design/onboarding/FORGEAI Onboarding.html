@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FORGEAI — Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0A;
+    --surface-1: #111111;
+    --surface-2: #1A1A1A;
+    --line: #222222;
+    --line-soft: rgba(255,255,255,0.08);
+    --lime: #E8FF3C;
+    --red: #FF3C3C;
+    --teal: #3CFFD4;
+    --text: #FFFFFF;
+    --muted: #999999;
+    --muted-2: #6b6b6b;
+    --display: 'Manrope', 'Space Grotesk', system-ui, sans-serif;
+    --body: 'Space Grotesk', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--body); -webkit-font-smoothing: antialiased; height: 100%; }
+  body {
+    overflow-x: hidden;
+    background:
+      radial-gradient(900px 500px at 100% 0%, rgba(232,255,60,0.05), transparent 60%),
+      radial-gradient(700px 400px at 0% 100%, rgba(60,255,212,0.03), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  /* ===== NAV ===== */
+  .nav {
+    backdrop-filter: blur(16px);
+    background: rgba(10,10,10,0.6);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .nav-inner {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+  }
+  .logo {
+    font-family: var(--display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px; border-radius: 2px; background: var(--lime);
+    box-shadow: 0 0 12px var(--lime);
+  }
+  .nav-meta {
+    display: flex; align-items: center; gap: 20px;
+  }
+  .progress-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.02);
+  }
+  .progress-pill .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 8px var(--lime);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .btn {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: rgba(255,255,255,0.02);
+  }
+  .btn-ghost:hover { border-color: #444; color: var(--text); }
+  .btn-primary {
+    background: var(--lime);
+    color: #0A0A0A;
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+
+  /* ===== LAYOUT ===== */
+  .stage {
+    flex: 1;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 45% 55%;
+    min-height: 0;
+  }
+  .pane {
+    display: flex; flex-direction: column;
+    min-height: 0;
+    position: relative;
+  }
+  .pane.left { border-right: 1px solid var(--line); }
+  .pane-head {
+    padding: 28px 40px 20px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .pane-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .pane-label::before {
+    content: "";
+    width: 24px; height: 1px; background: var(--lime);
+  }
+  .pane-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .pane-title .icon {
+    font-size: 22px;
+  }
+  .pane-sub {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-top: 8px;
+    max-width: 460px;
+  }
+
+  /* ===== FORM ===== */
+  .form-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+  }
+  .form-body::-webkit-scrollbar { width: 8px; }
+  .form-body::-webkit-scrollbar-track { background: transparent; }
+  .form-body::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+
+  .field {
+    margin-bottom: 26px;
+  }
+  .field-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .field-label .auto {
+    display: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--lime);
+    padding: 2px 8px;
+    border: 1px solid rgba(232,255,60,0.3);
+    background: rgba(232,255,60,0.06);
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+  }
+  .field.is-auto .field-label .auto { display: inline-flex; }
+
+  .input,
+  .textarea,
+  .select-trigger {
+    width: 100%;
+    background: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .input::placeholder, .textarea::placeholder { color: var(--muted-2); }
+  .input:focus, .textarea:focus, .select-trigger:focus {
+    border-color: rgba(232,255,60,0.5);
+    background: var(--surface-2);
+  }
+  .textarea {
+    resize: none;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+  .input.mono { font-family: var(--mono); font-size: 14px; letter-spacing: 0.02em; }
+  /* Hide native number spinners */
+  .input[type="number"]::-webkit-inner-spin-button,
+  .input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .input[type="number"] { -moz-appearance: textfield; }
+
+  .input-suffix {
+    position: relative;
+  }
+  .input-suffix .suffix {
+    position: absolute;
+    right: 16px; top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    pointer-events: none;
+  }
+  .input-suffix .input { padding-right: 60px; }
+
+  /* AI fill animation */
+  @keyframes flash-fill {
+    0% { background: var(--surface-1); border-color: var(--line); box-shadow: 0 0 0 0 rgba(232,255,60,0); }
+    20% { background: rgba(232,255,60,0.08); border-color: var(--lime); box-shadow: 0 0 0 4px rgba(232,255,60,0.15); }
+    100% { background: var(--surface-1); border-color: var(--line); box-shadow: 0 0 0 0 rgba(232,255,60,0); }
+  }
+  .input.flash, .select-trigger.flash, .textarea.flash, .pills.flash .pill-opt.selected {
+    animation: flash-fill 600ms ease-out;
+  }
+
+  /* Row */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* Pills radio */
+  .pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .pill-opt {
+    border: 1px solid var(--line);
+    background: var(--surface-1);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 12px 8px;
+    font-size: 14px;
+    font-family: var(--body);
+    transition: all .15s ease;
+    text-align: center;
+  }
+  .pill-opt:hover { border-color: #444; color: var(--text); }
+  .pill-opt.selected {
+    background: rgba(232,255,60,0.08);
+    border-color: var(--lime);
+    color: var(--lime);
+    font-weight: 600;
+  }
+
+  /* Select */
+  .select {
+    position: relative;
+  }
+  .select-trigger {
+    display: flex; align-items: center; justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+  }
+  .select-trigger .placeholder { color: var(--muted-2); }
+  .select-trigger .chev {
+    color: var(--muted-2);
+    transition: transform .15s ease;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .select.open .chev { transform: rotate(180deg); }
+  .select-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 6px;
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  }
+  .select.open .select-menu {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .select-opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .select-opt:hover { background: rgba(255,255,255,0.04); }
+  .select-opt.selected { background: rgba(232,255,60,0.08); color: var(--lime); }
+  .select-opt .em { font-size: 16px; }
+
+  .helper {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted-2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .helper svg { flex-shrink: 0; }
+
+  /* Sticky CTA */
+  .form-foot {
+    padding: 20px 40px 28px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(10,10,10,0), var(--bg) 40%);
+    flex-shrink: 0;
+  }
+  .btn-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 18px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 14px;
+    background: var(--lime);
+    color: #0A0A0A;
+    box-shadow: 0 0 0 0 rgba(232,255,60,0);
+    transition: transform .15s ease, box-shadow .2s ease;
+  }
+  .btn-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(232,255,60,0.2);
+  }
+  .form-foot .meta {
+    text-align: center;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+  }
+
+  /* ===== CHAT PANE ===== */
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    display: flex; flex-direction: column;
+    gap: 18px;
+  }
+  .chat-body::-webkit-scrollbar { width: 8px; }
+  .chat-body::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+
+  .timestamp {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    margin: 4px 0;
+  }
+
+  .bubble {
+    max-width: 82%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .bubble.user {
+    align-self: flex-end;
+    background: var(--surface-2);
+    border: 1px solid #2a2a2a;
+    border-bottom-right-radius: 6px;
+    color: var(--text);
+  }
+  .bubble.ai {
+    align-self: flex-start;
+    background: rgba(232,255,60,0.05);
+    border: 1px solid rgba(232,255,60,0.15);
+    border-left: 2px solid var(--lime);
+    border-bottom-left-radius: 6px;
+    color: var(--text);
+  }
+  .bubble.ai .who {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--lime);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bubble.ai .who::after {
+    content: "";
+    width: 4px; height: 4px; border-radius: 50%; background: var(--lime);
+    box-shadow: 0 0 6px var(--lime);
+  }
+
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(232,255,60,0.12);
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    background: rgba(232,255,60,0.1);
+    color: var(--lime);
+    border: 1px solid rgba(232,255,60,0.25);
+    padding: 5px 10px;
+    border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .chip:hover { background: rgba(232,255,60,0.18); }
+  .chip .check {
+    width: 12px; height: 12px;
+    color: var(--lime);
+    flex-shrink: 0;
+  }
+
+  .typing-bubble {
+    align-self: flex-start;
+    background: rgba(232,255,60,0.05);
+    border: 1px solid rgba(232,255,60,0.15);
+    border-left: 2px solid var(--lime);
+    border-bottom-left-radius: 6px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    display: none;
+    align-items: center; gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .typing-bubble.show { display: inline-flex; }
+  .typing { display: inline-flex; gap: 4px; }
+  .typing span {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--lime);
+    animation: typing 1.2s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Chat input */
+  .chat-foot {
+    padding: 20px 40px 28px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(10,10,10,0), var(--bg) 40%);
+    flex-shrink: 0;
+  }
+  .chat-input {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 10px 10px 18px;
+    transition: border-color .15s ease;
+  }
+  .chat-input:focus-within { border-color: rgba(232,255,60,0.4); }
+  .chat-input input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    outline: none;
+  }
+  .chat-input input::placeholder { color: var(--muted-2); }
+  .send-btn {
+    width: 38px; height: 38px;
+    background: var(--lime);
+    color: #0A0A0A;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-weight: 700;
+    transition: transform .15s ease;
+  }
+  .send-btn:hover { transform: translateY(-1px); }
+  .chat-hints {
+    margin-top: 12px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    background: var(--surface-1);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .hint:hover { border-color: rgba(232,255,60,0.3); color: var(--lime); }
+
+  /* ===== Mobile ===== */
+  .mobile-toggle { display: none; }
+  @media (max-width: 960px) {
+    .stage {
+      grid-template-columns: 1fr;
+    }
+    .pane.left { border-right: none; }
+    .pane.right {
+      border-bottom: 1px solid var(--line);
+      max-height: 50vh;
+    }
+    .pane-head, .form-body, .form-foot, .chat-body, .chat-foot {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .nav-inner { padding: 0 20px; }
+    .pane-title { font-size: 22px; }
+    .nav-meta .progress-pill { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      FORGEAI
+    </div>
+    <div class="nav-meta">
+      <div class="progress-pill">
+        <span class="pulse"></span>
+        Step 01 / 01 · Setup
+      </div>
+      <button class="btn btn-ghost">Lewati →</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== STAGE ========== -->
+<main class="stage">
+
+  <!-- ===== LEFT: FORM ===== -->
+  <section class="pane left">
+    <div class="pane-head">
+      <div class="pane-label">Onboarding · Biodata</div>
+      <div class="pane-title">
+        <span class="icon">📋</span>
+        <span>Profil Kamu</span>
+      </div>
+      <p class="pane-sub">Isi manual atau biarin AI yang ngisi otomatis lewat chat. Semua field opsional — bisa dilengkapin nanti.</p>
+    </div>
+
+    <div class="form-body">
+      <div class="field" id="f-nama">
+        <div class="field-label">
+          <span>Nama Tampilan</span>
+          <span class="auto">AI Filled</span>
+        </div>
+        <input class="input" type="text" placeholder="Mau dipanggil apa?" autocomplete="off" />
+      </div>
+
+      <div class="field" id="f-gender">
+        <div class="field-label">
+          <span>Jenis Kelamin</span>
+          <span class="auto">AI Filled</span>
+        </div>
+        <div class="pills" role="radiogroup">
+          <button class="pill-opt" data-val="Pria">Pria</button>
+          <button class="pill-opt" data-val="Wanita">Wanita</button>
+          <button class="pill-opt" data-val="Lainnya">Lainnya</button>
+        </div>
+      </div>
+
+      <div class="row-3">
+        <div class="field" id="f-umur">
+          <div class="field-label">
+            <span>Umur</span>
+            <span class="auto">AI</span>
+          </div>
+          <div class="input-suffix">
+            <input class="input mono" type="number" placeholder="—" />
+            <span class="suffix">tahun</span>
+          </div>
+        </div>
+        <div class="field" id="f-tb">
+          <div class="field-label">
+            <span>Tinggi</span>
+            <span class="auto">AI</span>
+          </div>
+          <div class="input-suffix">
+            <input class="input mono" type="number" placeholder="—" />
+            <span class="suffix">cm</span>
+          </div>
+        </div>
+        <div class="field" id="f-bb">
+          <div class="field-label">
+            <span>Berat</span>
+            <span class="auto">AI</span>
+          </div>
+          <div class="input-suffix">
+            <input class="input mono" type="number" placeholder="—" />
+            <span class="suffix">kg</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field" id="f-goal">
+          <div class="field-label">
+            <span>Goal Fitness</span>
+            <span class="auto">AI Filled</span>
+          </div>
+          <div class="select" data-name="goal">
+            <button class="select-trigger" type="button">
+              <span class="value placeholder">Pilih goal…</span>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="select-menu">
+              <div class="select-opt" data-val="Cutting" data-em="⚡"><span class="em">⚡</span>Cutting</div>
+              <div class="select-opt" data-val="Bulking" data-em="💪"><span class="em">💪</span>Bulking</div>
+              <div class="select-opt" data-val="Maintenance" data-em="🔄"><span class="em">🔄</span>Maintenance</div>
+              <div class="select-opt" data-val="Health" data-em="❤️"><span class="em">❤️</span>Health</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="f-level">
+          <div class="field-label">
+            <span>Level Aktivitas</span>
+            <span class="auto">AI Filled</span>
+          </div>
+          <div class="select" data-name="level">
+            <button class="select-trigger" type="button">
+              <span class="value placeholder">Pilih level…</span>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="select-menu">
+              <div class="select-opt" data-val="Sedentary">Sedentary</div>
+              <div class="select-opt" data-val="Light">Light</div>
+              <div class="select-opt" data-val="Moderate">Moderate</div>
+              <div class="select-opt" data-val="Active">Active</div>
+              <div class="select-opt" data-val="Very Active">Very Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="f-riwayat">
+        <div class="field-label">
+          <span>Riwayat Olahraga</span>
+          <span class="auto">AI Filled</span>
+        </div>
+        <textarea class="textarea" rows="3" placeholder="Contoh: Gym 2 tahun, sekarang vakum…"></textarea>
+        <div class="helper">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Bisa diisi nanti di Settings
+        </div>
+      </div>
+
+      <div class="field" id="f-cedera">
+        <div class="field-label">
+          <span>Cedera / Limitasi</span>
+          <span class="auto">AI Filled</span>
+        </div>
+        <textarea class="textarea" rows="3" placeholder="Tulis jika ada, atau kosongkan"></textarea>
+        <div class="helper">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Bisa diisi nanti di Settings
+        </div>
+      </div>
+    </div>
+
+    <div class="form-foot">
+      <button class="btn btn-cta">🚀 Mulai Training</button>
+      <div class="meta">Atau lengkapin profil lewat chat di kanan →</div>
+    </div>
+  </section>
+
+  <!-- ===== RIGHT: CHAT ===== -->
+  <section class="pane right">
+    <div class="pane-head">
+      <div class="pane-label">AI Assistant · Live</div>
+      <div class="pane-title">
+        <span class="icon">💬</span>
+        <span>Chat Sama AI</span>
+      </div>
+      <p class="pane-sub">Cerita aja kayak ngobrol biasa. AI bakal ekstrak data dan isi form otomatis.</p>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="timestamp">— Hari ini · 14:32 —</div>
+
+      <div class="bubble ai">
+        <div class="who">FORGEAI</div>
+        Halo! Gue FORGEAI. 👋 Ceritain aja tentang kamu — berat badan, tinggi, pengalaman olahraga, dan tujuan fitness kamu. Nanti gue bantu isi formnya otomatis!
+      </div>
+
+      <div class="bubble user">Saya cowok 25 tahun, 175cm 80kg. Dulu gym 2 tahun tapi vakum setahun. Mau cutting.</div>
+
+      <div class="bubble ai">
+        <div class="who">FORGEAI</div>
+        Sip, gue udah catet ya. Body comp kamu solid buat cutting — 80kg di 175cm, BMI ~26. Karena vakum setahun, kita mulai pelan biar ga overuse injury. Mau target deficit berapa kg/minggu?
+        <div class="chips">
+          <span class="chip" data-target="f-gender"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Gender: Pria</span>
+          <span class="chip" data-target="f-umur"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Umur: 25</span>
+          <span class="chip" data-target="f-tb"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> TB: 175cm</span>
+          <span class="chip" data-target="f-bb"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> BB: 80kg</span>
+          <span class="chip" data-target="f-goal"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Goal: Cutting</span>
+          <span class="chip" data-target="f-riwayat"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Riwayat: Gym 2thn</span>
+        </div>
+      </div>
+
+      <div class="typing-bubble" id="typingBubble">
+        <span class="typing"><span></span><span></span><span></span></span>
+        FORGEAI lagi mikir…
+      </div>
+    </div>
+
+    <div class="chat-foot">
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Cerita ke FORGEAI… (mis. tinggi, berat, goal)" />
+        <button class="send-btn" id="sendBtn" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        </button>
+      </div>
+      <div class="chat-hints">
+        <button class="hint">🏃 Sedentary, kerja kantoran</button>
+        <button class="hint">🦴 Punya cedera lutut</button>
+        <button class="hint">🎯 Goal bulking lean</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ===== Pill radio =====
+  document.querySelectorAll('.pills').forEach(group => {
+    group.addEventListener('click', (e) => {
+      const opt = e.target.closest('.pill-opt');
+      if (!opt) return;
+      group.querySelectorAll('.pill-opt').forEach(p => p.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  // ===== Custom select =====
+  document.querySelectorAll('.select').forEach(sel => {
+    const trigger = sel.querySelector('.select-trigger');
+    const valEl = sel.querySelector('.value');
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.select.open').forEach(s => { if (s !== sel) s.classList.remove('open'); });
+      sel.classList.toggle('open');
+    });
+    sel.querySelectorAll('.select-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        sel.querySelectorAll('.select-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        const em = opt.dataset.em ? opt.dataset.em + ' ' : '';
+        valEl.textContent = em + opt.dataset.val;
+        valEl.classList.remove('placeholder');
+        sel.classList.remove('open');
+      });
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.select.open').forEach(s => s.classList.remove('open'));
+  });
+
+  // ===== AI-fill chip → highlight & flash target field =====
+  function flashField(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    field.classList.add('is-auto');
+    field.querySelectorAll('.input, .textarea, .select-trigger').forEach(el => {
+      el.classList.remove('flash');
+      void el.offsetWidth; // restart animation
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 700);
+    });
+    const pills = field.querySelector('.pills');
+    if (pills) {
+      pills.classList.remove('flash');
+      void pills.offsetWidth;
+      pills.classList.add('flash');
+      setTimeout(() => pills.classList.remove('flash'), 700);
+    }
+  }
+
+  // Pre-fill the form to match the sample conversation
+  function applyAIFill() {
+    // Nama: leave blank (user didn't provide one)
+    // Gender: Pria
+    const genderField = document.getElementById('f-gender');
+    const priaBtn = genderField.querySelector('[data-val="Pria"]');
+    priaBtn.classList.add('selected');
+    flashField('f-gender');
+    // Umur
+    setTimeout(() => {
+      document.querySelector('#f-umur input').value = 25;
+      flashField('f-umur');
+    }, 120);
+    // TB
+    setTimeout(() => {
+      document.querySelector('#f-tb input').value = 175;
+      flashField('f-tb');
+    }, 240);
+    // BB
+    setTimeout(() => {
+      document.querySelector('#f-bb input').value = 80;
+      flashField('f-bb');
+    }, 360);
+    // Goal
+    setTimeout(() => {
+      const sel = document.querySelector('.select[data-name="goal"]');
+      const opt = sel.querySelector('[data-val="Cutting"]');
+      sel.querySelectorAll('.select-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      sel.querySelector('.value').textContent = '⚡ Cutting';
+      sel.querySelector('.value').classList.remove('placeholder');
+      flashField('f-goal');
+    }, 480);
+    // Level
+    setTimeout(() => {
+      const sel = document.querySelector('.select[data-name="level"]');
+      const opt = sel.querySelector('[data-val="Moderate"]');
+      sel.querySelectorAll('.select-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      sel.querySelector('.value').textContent = 'Moderate';
+      sel.querySelector('.value').classList.remove('placeholder');
+      flashField('f-level');
+    }, 600);
+    // Riwayat
+    setTimeout(() => {
+      document.querySelector('#f-riwayat textarea').value = 'Gym 2 tahun, vakum 1 tahun terakhir. Pengen mulai pelan biar konsisten.';
+      flashField('f-riwayat');
+    }, 720);
+  }
+
+  // Run on load
+  window.addEventListener('load', () => {
+    setTimeout(applyAIFill, 600);
+  });
+
+  // Chip click → re-flash field
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const target = chip.dataset.target;
+      if (target) flashField(target);
+    });
+  });
+
+  // ===== Chat send (cosmetic) =====
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatBody = document.getElementById('chatBody');
+  const typingBubble = document.getElementById('typingBubble');
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    const userB = document.createElement('div');
+    userB.className = 'bubble user';
+    userB.textContent = text;
+    chatBody.insertBefore(userB, typingBubble);
+    input.value = '';
+    typingBubble.classList.add('show');
+    chatBody.scrollTop = chatBody.scrollHeight;
+    setTimeout(() => {
+      typingBubble.classList.remove('show');
+      const aiB = document.createElement('div');
+      aiB.className = 'bubble ai';
+      aiB.innerHTML = '<div class="who">FORGEAI</div>Noted! Ada info tambahan yang mau dikasih? Misal jadwal training per minggu atau cedera yang perlu gue tau.';
+      chatBody.insertBefore(aiB, typingBubble);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }, 1200);
+  }
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // Hint click → pre-fill input
+  document.querySelectorAll('.hint').forEach(h => {
+    h.addEventListener('click', () => {
+      input.value = h.textContent.replace(/^\S+\s/, '').trim();
+      input.focus();
+    });
+  });
+</script>
+
+</body>
+</html>

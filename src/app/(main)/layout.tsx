@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
+import { checkOnboarding } from '@/lib/actions/onboarding';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 
@@ -10,6 +11,9 @@ export default async function MainLayout({
 }) {
   const session = await getSession();
   if (!session) redirect('/login');
+
+  const onboarded = await checkOnboarding();
+  if (!onboarded) redirect('/onboarding');
 
   return (
     <div className="flex h-screen bg-background">
