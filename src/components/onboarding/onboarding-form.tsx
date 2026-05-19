@@ -16,6 +16,7 @@ export interface OnboardingFormData {
   activity_level: string;
   exercise_history: string;
   injuries: string;
+  address: string;
 }
 
 interface OnboardingFormProps {
@@ -323,6 +324,24 @@ export function OnboardingForm({
           <p className="text-xs text-muted-foreground">
             Bisa diisi nanti di Settings
           </p>
+        </div>
+
+        {/* Alamat */}
+        <div
+          ref={setFieldRef('address')}
+          className="field-container space-y-1.5"
+        >
+          <Label>
+            Alamat
+            {aiFilledFields.has('address') && <AiBadge />}
+          </Label>
+          <textarea
+            value={formData.address}
+            onChange={(e) => update('address', e.target.value)}
+            placeholder="Kota / daerah tempat tinggal"
+            rows={2}
+            className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors resize-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          />
         </div>
       </div>
 

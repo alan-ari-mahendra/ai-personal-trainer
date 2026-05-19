@@ -22,16 +22,6 @@ const messages = [
 export function ChatDemo() {
   return (
     <section className="mx-auto max-w-[1280px] px-6 py-24">
-      {/* Label */}
-      <div className="text-center">
-        <p
-          className="mb-4 inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-          style={{ fontFamily: "var(--font-mono), monospace" }}
-        >
-          <span className="inline-block h-px w-6 bg-[var(--lime)]" />
-          04 &middot; Live Conversation
-        </p>
-      </div>
 
       {/* Title */}
       <h2

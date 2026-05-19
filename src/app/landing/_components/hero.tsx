@@ -93,7 +93,7 @@ export function Hero() {
           {/* CTAs */}
           <div className="flex items-center gap-4">
             <a
-              href="#"
+              href="/register"
               className="rounded-full bg-[var(--lime)] px-7 py-3 text-[15px] font-semibold text-black transition-opacity duration-200 hover:opacity-90"
               style={{
                 fontFamily: "var(--font-body), system-ui, sans-serif",

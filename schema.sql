@@ -22,6 +22,7 @@ CREATE TABLE users (
     gender          VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
     exercise_history TEXT,
     injuries        TEXT,
+    address         TEXT,
     onboarding_completed BOOLEAN DEFAULT FALSE,
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()

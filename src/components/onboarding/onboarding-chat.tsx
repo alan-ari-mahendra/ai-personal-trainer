@@ -23,6 +23,7 @@ const FIELD_LABELS: Record<string, string> = {
   activity_level: 'Level',
   exercise_history: 'Riwayat',
   injuries: 'Cedera',
+  address: 'Alamat',
 };
 
 const GENDER_DISPLAY: Record<string, string> = {

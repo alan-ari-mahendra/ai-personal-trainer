@@ -33,6 +33,7 @@ export const users = pgTable(
     gender: varchar('gender', { length: 10 }),
     exerciseHistory: text('exercise_history'),
     injuries: text('injuries'),
+    address: text('address'),
     onboardingCompleted: boolean('onboarding_completed').default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),

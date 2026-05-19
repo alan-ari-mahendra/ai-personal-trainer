@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-const publicPaths = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/api/health', '/landing'];
+const publicPaths = ['/login', '/register', '/api/auth/login', '/api/auth/register', '/api/health'];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public routes — skip auth
-  if (publicPaths.some(p => pathname.startsWith(p))) {
+  if (pathname === '/' || publicPaths.some(p => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 

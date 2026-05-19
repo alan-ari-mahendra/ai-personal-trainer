@@ -36,7 +36,7 @@ export function FinalCTA() {
         </p>
 
         <a
-          href="#"
+          href="/register"
           className="mt-10 inline-block rounded-full bg-[var(--lime)] px-10 py-4 text-[16px] font-semibold text-black transition-opacity duration-200 hover:opacity-90"
           style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}
         >

@@ -15,6 +15,7 @@ export interface OnboardingData {
   activity_level: string;
   exercise_history: string | null;
   injuries: string | null;
+  address: string | null;
 }
 
 export async function saveOnboarding(data: OnboardingData) {
@@ -31,6 +32,7 @@ export async function saveOnboarding(data: OnboardingData) {
     activityLevel: data.activity_level,
     exerciseHistory: data.exercise_history,
     injuries: data.injuries,
+    address: data.address,
     onboardingCompleted: true,
     updatedAt: new Date(),
   }).where(eq(users.id, session.userId));

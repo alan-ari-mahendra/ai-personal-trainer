@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "./landing/landing.css";
 
 const manrope = Manrope({
   subsets: ["latin"],

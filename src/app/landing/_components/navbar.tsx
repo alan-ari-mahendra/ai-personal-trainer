@@ -28,10 +28,15 @@ export function Navbar() {
         <div
           className="landing-nav-links flex items-center gap-8"
         >
-          {["Features", "How It Works", "Pricing", "Login"].map((label) => (
+          {[
+            { label: "Features", href: "#features" },
+            { label: "How It Works", href: "#how" },
+            { label: "Pricing", href: "#pricing" },
+            { label: "Login", href: "/login" },
+          ].map(({ label, href }) => (
             <a
               key={label}
-              href={`#${label.toLowerCase().replace(/\s+/g, "-")}`}
+              href={href}
               className="text-[13px] tracking-[0.05em] text-[var(--muted)] transition-colors duration-200 hover:text-[var(--text)]"
               style={{
                 fontFamily: "var(--font-body), system-ui, sans-serif",
@@ -44,7 +49,7 @@ export function Navbar() {
 
         {/* CTA */}
         <a
-          href="#"
+          href="/register"
           className="rounded-full bg-[var(--lime)] px-5 py-2 text-[13px] font-semibold text-black transition-opacity duration-200 hover:opacity-90"
           style={{
             fontFamily: "var(--font-body), system-ui, sans-serif",

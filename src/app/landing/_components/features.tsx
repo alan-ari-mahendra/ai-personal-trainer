@@ -147,13 +147,6 @@ function MiniChat() {
 export function Features() {
   return (
     <section id="features" className="mx-auto max-w-[1280px] px-6 py-24">
-      {/* Label */}
-      <p
-        className="section-dash mb-4 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono), monospace" }}
-      >
-        02 · Features
-      </p>
 
       {/* Title */}
       <h2

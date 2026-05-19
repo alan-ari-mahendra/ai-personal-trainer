@@ -26,13 +26,6 @@ export function Dashboard() {
 
   return (
     <section className="mx-auto max-w-[1280px] px-6 py-24" ref={sectionRef}>
-      {/* Label */}
-      <p
-        className="section-dash mb-4 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono), monospace" }}
-      >
-        01 · Today&apos;s Overview
-      </p>
 
       {/* Title */}
       <h2

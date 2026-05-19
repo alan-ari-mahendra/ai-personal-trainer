@@ -19,6 +19,7 @@ const EMPTY_FORM: OnboardingFormData = {
   activity_level: '',
   exercise_history: '',
   injuries: '',
+  address: '',
 };
 
 export default function OnboardingPage() {
@@ -70,6 +71,7 @@ export default function OnboardingPage() {
         activity_level: formData.activity_level || 'moderate',
         exercise_history: formData.exercise_history || null,
         injuries: formData.injuries || null,
+        address: formData.address || null,
       });
       router.push('/chat');
     } catch (error) {
@@ -93,6 +95,7 @@ export default function OnboardingPage() {
         activity_level: 'moderate',
         exercise_history: null,
         injuries: null,
+        address: null,
       });
       router.push('/chat');
     } catch (error) {

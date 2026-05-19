@@ -21,13 +21,6 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="mx-auto max-w-[1280px] px-6 py-24">
-      {/* Label */}
-      <p
-        className="section-dash mb-4 flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono), monospace" }}
-      >
-        03 &middot; The Process
-      </p>
 
       {/* Title */}
       <h2

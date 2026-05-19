@@ -28,7 +28,7 @@ Kamu HARUS merespon dalam 2 bagian:
 
 1. JSON block (untuk auto-fill form) — WAJIB ada di awal response, format exact:
 ---FORM_DATA---
-{"form_updates": {"display_name": "...", "gender": "male", "age": 25, "height_cm": 175, "weight_kg": 80, "goal": "cutting", "activity_level": "moderate", "exercise_history": "...", "injuries": null}}
+{"form_updates": {"display_name": "...", "gender": "male", "age": 25, "height_cm": 175, "weight_kg": 80, "goal": "cutting", "activity_level": "moderate", "exercise_history": "...", "injuries": null, "address": "Jakarta Selatan"}}
 ---END_FORM_DATA---
 
 2. Pesan conversational ke user (konfirmasi apa yang diisi + tanya follow-up).
