@@ -119,7 +119,7 @@ export default function Footer() {
         <div>
           <h4
             className="mb-4 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-            style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+            style={{ fontFamily: "var(--font-mono), monospace" }}
           >
             Product
           </h4>
@@ -142,7 +142,7 @@ export default function Footer() {
         <div>
           <h4
             className="mb-4 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-            style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+            style={{ fontFamily: "var(--font-mono), monospace" }}
           >
             Company
           </h4>
@@ -165,7 +165,7 @@ export default function Footer() {
         <div>
           <h4
             className="mb-4 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-            style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+            style={{ fontFamily: "var(--font-mono), monospace" }}
           >
             Legal
           </h4>
@@ -195,7 +195,7 @@ export default function Footer() {
         </span>
         <span
           className="text-[12px] text-[var(--muted-2)]"
-          style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+          style={{ fontFamily: "var(--font-mono), monospace" }}
         >
           v1.4.2 &middot; Built for the iron
         </span>

@@ -6,13 +6,13 @@ import { getWorkoutToday } from '@/lib/actions/track';
 
 interface WorkoutEntry {
   id: number;
-  exercise_name: string;
-  weight_kg: string | null;
+  exerciseName: string;
+  weightKg: string | null;
   sets: number;
   reps: number;
   rpe: number | null;
   volume: string;
-  created_at: string;
+  createdAt: Date | null;
 }
 
 interface WorkoutHistoryProps {
@@ -59,11 +59,11 @@ export function WorkoutHistory({ refreshKey }: WorkoutHistoryProps) {
                 className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
               >
                 <div>
-                  <span className="font-medium">{w.exercise_name}</span>
+                  <span className="font-medium">{w.exerciseName}</span>
                   <span className="text-muted-foreground">
                     {' '}
                     — {w.sets}×{w.reps}
-                    {w.weight_kg ? ` @ ${w.weight_kg}kg` : ''}
+                    {w.weightKg ? ` @ ${w.weightKg}kg` : ''}
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">

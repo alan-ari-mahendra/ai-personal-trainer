@@ -150,7 +150,7 @@ export function Features() {
       {/* Label */}
       <p
         className="section-dash mb-4 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+        style={{ fontFamily: "var(--font-mono), monospace" }}
       >
         02 · Features
       </p>

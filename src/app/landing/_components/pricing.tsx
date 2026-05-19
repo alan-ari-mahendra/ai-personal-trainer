@@ -53,7 +53,7 @@ export function Pricing() {
       {/* Label */}
       <p
         className="section-dash mb-4 flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+        style={{ fontFamily: "var(--font-mono), monospace" }}
       >
         06 &middot; Pricing
       </p>
@@ -94,7 +94,7 @@ export function Pricing() {
                 className="absolute left-1/2 -translate-x-1/2 rounded-full bg-[var(--lime)] px-4 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-black"
                 style={{
                   top: "-12px",
-                  fontFamily: "var(--font-mono-landing), monospace",
+                  fontFamily: "var(--font-mono), monospace",
                 }}
               >
                 {plan.badge}
@@ -104,7 +104,7 @@ export function Pricing() {
             {/* Plan label */}
             <p
               className="mb-4 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-              style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+              style={{ fontFamily: "var(--font-mono), monospace" }}
             >
               {plan.name}
             </p>
@@ -136,7 +136,7 @@ export function Pricing() {
                 <li key={f} className="flex items-start gap-2.5">
                   <span
                     className="mt-[3px] text-[14px] text-[var(--lime)]"
-                    style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+                    style={{ fontFamily: "var(--font-mono), monospace" }}
                   >
                     +
                   </span>

@@ -1,4 +1,6 @@
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { bodyStats } from '@/lib/schema';
+import { sql } from 'drizzle-orm';
 
 interface SaveBodyStatsInput {
   userId: string;
@@ -9,17 +11,20 @@ interface SaveBodyStatsInput {
 
 export async function saveBodyStats(input: SaveBodyStatsInput) {
   try {
-    const result = await sql`
-      INSERT INTO body_stats (user_id, weight_kg, waist_cm, notes, recorded_at)
-      VALUES (${input.userId}, ${input.weightKg}, ${input.waistCm},
-              ${input.notes}, CURRENT_DATE)
-      ON CONFLICT (user_id, recorded_at)
-      DO UPDATE SET
-        weight_kg = EXCLUDED.weight_kg,
-        waist_cm = COALESCE(EXCLUDED.waist_cm, body_stats.waist_cm),
-        notes = EXCLUDED.notes
-      RETURNING id, weight_kg, waist_cm, recorded_at
-    `;
+    const result = await db.insert(bodyStats).values({
+      userId: input.userId,
+      weightKg: input.weightKg.toString(),
+      waistCm: input.waistCm?.toString() ?? null,
+      notes: input.notes,
+      recordedAt: sql`CURRENT_DATE`,
+    }).onConflictDoUpdate({
+      target: [bodyStats.userId, bodyStats.recordedAt],
+      set: {
+        weightKg: sql`EXCLUDED.weight_kg`,
+        waistCm: sql`COALESCE(EXCLUDED.waist_cm, ${bodyStats.waistCm})`,
+        notes: sql`EXCLUDED.notes`,
+      },
+    }).returning();
 
     return { success: true, data: result[0] };
   } catch (error) {

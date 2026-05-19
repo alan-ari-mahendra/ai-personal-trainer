@@ -10,15 +10,15 @@ interface NutritionHistoryProps {
 }
 
 interface NutritionEntry {
-  id: string;
-  meal_type: string;
-  food_name: string;
+  id: number;
+  mealType: string;
+  foodName: string;
   calories: number | null;
-  protein_g: number | null;
-  carbs_g: number | null;
-  fat_g: number | null;
-  portion_size: string;
-  created_at: string;
+  proteinG: string | null;
+  carbsG: string | null;
+  fatG: string | null;
+  portionSize: string | null;
+  createdAt: Date | null;
 }
 
 const MEAL_LABELS: Record<string, { emoji: string; label: string }> = {
@@ -30,8 +30,8 @@ const MEAL_LABELS: Record<string, { emoji: string; label: string }> = {
 
 const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
 
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString("id-ID", {
+function formatTime(date: Date | string): string {
+  return new Date(date).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -100,7 +100,7 @@ export function NutritionHistory({ refreshKey }: NutritionHistoryProps) {
           emoji: "",
           label: mealType,
         };
-        const firstTime = entries[0]?.created_at;
+        const firstTime = entries[0]?.createdAt;
 
         return (
           <Card key={mealType}>
@@ -123,16 +123,16 @@ export function NutritionHistory({ refreshKey }: NutritionHistoryProps) {
                   key={entry.id}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="truncate pr-2">{entry.food_name}</span>
+                  <span className="truncate pr-2">{entry.foodName}</span>
                   <div className="flex shrink-0 items-center gap-2">
                     {entry.calories != null && (
                       <Badge variant="secondary" className="text-xs">
                         {entry.calories} kcal
                       </Badge>
                     )}
-                    {entry.protein_g != null && (
+                    {entry.proteinG != null && (
                       <span className="text-xs text-muted-foreground">
-                        {entry.protein_g}g P
+                        {entry.proteinG}g P
                       </span>
                     )}
                   </div>

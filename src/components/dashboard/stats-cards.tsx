@@ -35,17 +35,17 @@ export function StatsCards() {
         ? `${overview.weeklyCardio.sessions} sesi`
         : '—',
       sub: overview
-        ? `Total: ${overview.weeklyCardio.total_min} menit`
+        ? `Total: ${overview.weeklyCardio.totalMin} menit`
         : '',
     },
     {
       title: 'Berat Badan',
       icon: Scale,
       value: overview?.latestWeight
-        ? `${overview.latestWeight.weight_kg} kg`
+        ? `${overview.latestWeight.weightKg} kg`
         : '—',
       sub: overview?.latestWeight
-        ? `Update: ${overview.latestWeight.recorded_at}`
+        ? `Update: ${overview.latestWeight.recordedAt}`
         : 'Belum ada data',
     },
   ];

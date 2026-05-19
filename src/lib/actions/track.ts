@@ -1,7 +1,9 @@
 'use server';
 
 import { getSession } from '@/lib/auth';
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { meals, workouts, cardioLogs } from '@/lib/schema';
+import { eq, and, sql } from 'drizzle-orm';
 
 // ===== Nutrition =====
 
@@ -25,12 +27,26 @@ export async function saveNutrition(data: {
   const inserted = [];
   for (const item of items) {
     if (!item.food_name?.trim()) continue;
-    const result = await sql`
-      INSERT INTO meals (user_id, meal_type, food_name, calories, protein_g, carbs_g, fat_g, portion_size)
-      VALUES (${session.userId}, ${meal_type}, ${item.food_name.trim()},
-              ${item.calories}, ${item.protein_g}, ${item.carbs_g}, ${item.fat_g}, ${item.portion_size})
-      RETURNING id, meal_type, food_name, calories, protein_g, carbs_g, fat_g, portion_size, created_at
-    `;
+    const result = await db.insert(meals).values({
+      userId: session.userId,
+      mealType: meal_type,
+      foodName: item.food_name.trim(),
+      calories: item.calories,
+      proteinG: item.protein_g?.toString() ?? null,
+      carbsG: item.carbs_g?.toString() ?? null,
+      fatG: item.fat_g?.toString() ?? null,
+      portionSize: item.portion_size,
+    }).returning({
+      id: meals.id,
+      mealType: meals.mealType,
+      foodName: meals.foodName,
+      calories: meals.calories,
+      proteinG: meals.proteinG,
+      carbsG: meals.carbsG,
+      fatG: meals.fatG,
+      portionSize: meals.portionSize,
+      createdAt: meals.createdAt,
+    });
     inserted.push(result[0]);
   }
   return { success: true, data: inserted };
@@ -40,16 +56,23 @@ export async function getNutritionToday() {
   const session = await getSession();
   if (!session) throw new Error('Unauthorized');
 
-  const meals = await sql`
-    SELECT id, meal_type, food_name, calories, protein_g, carbs_g, fat_g, portion_size, created_at
-    FROM meals
-    WHERE user_id = ${session.userId} AND DATE(created_at) = CURRENT_DATE
-    ORDER BY created_at ASC
-  `;
+  const rows = await db.select({
+    id: meals.id,
+    mealType: meals.mealType,
+    foodName: meals.foodName,
+    calories: meals.calories,
+    proteinG: meals.proteinG,
+    carbsG: meals.carbsG,
+    fatG: meals.fatG,
+    portionSize: meals.portionSize,
+    createdAt: meals.createdAt,
+  }).from(meals).where(
+    and(eq(meals.userId, session.userId), sql`DATE(${meals.createdAt}) = CURRENT_DATE`)
+  ).orderBy(meals.createdAt);
 
-  const grouped: Record<string, typeof meals> = {};
-  for (const meal of meals) {
-    const type = meal.meal_type as string;
+  const grouped: Record<string, typeof rows> = {};
+  for (const meal of rows) {
+    const type = meal.mealType;
     if (!grouped[type]) grouped[type] = [];
     grouped[type].push(meal);
   }
@@ -77,13 +100,25 @@ export async function saveWorkout(data: {
   const inserted = [];
   for (const ex of exercises) {
     if (!ex.exercise_name?.trim() || !ex.sets || !ex.reps) continue;
-    const result = await sql`
-      INSERT INTO workouts (user_id, exercise_name, weight_kg, sets, reps, rpe, notes)
-      VALUES (${session.userId}, ${ex.exercise_name.trim()}, ${ex.weight_kg},
-              ${ex.sets}, ${ex.reps}, ${ex.rpe}, ${ex.notes})
-      RETURNING id, exercise_name, weight_kg, sets, reps, rpe, notes,
-                (sets * reps * COALESCE(weight_kg, 0))::decimal(12,2) as volume, created_at
-    `;
+    const result = await db.insert(workouts).values({
+      userId: session.userId,
+      exerciseName: ex.exercise_name.trim(),
+      weightKg: ex.weight_kg?.toString() ?? null,
+      sets: ex.sets,
+      reps: ex.reps,
+      rpe: ex.rpe,
+      notes: ex.notes,
+    }).returning({
+      id: workouts.id,
+      exerciseName: workouts.exerciseName,
+      weightKg: workouts.weightKg,
+      sets: workouts.sets,
+      reps: workouts.reps,
+      rpe: workouts.rpe,
+      notes: workouts.notes,
+      volume: sql<string>`(${workouts.sets} * ${workouts.reps} * COALESCE(${workouts.weightKg}, 0))::decimal(12,2)`,
+      createdAt: workouts.createdAt,
+    });
     inserted.push(result[0]);
   }
   return { success: true, data: inserted };
@@ -93,16 +128,22 @@ export async function getWorkoutToday() {
   const session = await getSession();
   if (!session) throw new Error('Unauthorized');
 
-  const workouts = await sql`
-    SELECT id, exercise_name, weight_kg, sets, reps, rpe, notes,
-           (sets * reps * COALESCE(weight_kg, 0))::decimal(12,2) as volume, created_at
-    FROM workouts
-    WHERE user_id = ${session.userId} AND DATE(created_at) = CURRENT_DATE
-    ORDER BY created_at ASC
-  `;
+  const rows = await db.select({
+    id: workouts.id,
+    exerciseName: workouts.exerciseName,
+    weightKg: workouts.weightKg,
+    sets: workouts.sets,
+    reps: workouts.reps,
+    rpe: workouts.rpe,
+    notes: workouts.notes,
+    volume: sql<string>`(${workouts.sets} * ${workouts.reps} * COALESCE(${workouts.weightKg}, 0))::decimal(12,2)`,
+    createdAt: workouts.createdAt,
+  }).from(workouts).where(
+    and(eq(workouts.userId, session.userId), sql`DATE(${workouts.createdAt}) = CURRENT_DATE`)
+  ).orderBy(workouts.createdAt);
 
-  const totalVolume = workouts.reduce((sum, w) => sum + Number(w.volume || 0), 0);
-  return { data: workouts, totalVolume };
+  const totalVolume = rows.reduce((s, w) => s + Number(w.volume || 0), 0);
+  return { data: rows, totalVolume };
 }
 
 // ===== Cardio =====
@@ -128,11 +169,24 @@ export async function saveCardio(data: {
     : null;
   const caloriesBurned = Math.round(duration_min * (CAL_PER_MIN[type] || 6));
 
-  const result = await sql`
-    INSERT INTO cardio_logs (user_id, type, distance_km, duration_min, pace_min_km, calories_burned, notes)
-    VALUES (${session.userId}, ${type}, ${distance_km}, ${duration_min}, ${paceMinKm}, ${caloriesBurned}, ${notes})
-    RETURNING id, type, distance_km, duration_min, pace_min_km, calories_burned, notes, created_at
-  `;
+  const result = await db.insert(cardioLogs).values({
+    userId: session.userId,
+    type,
+    distanceKm: distance_km?.toString() ?? null,
+    durationMin: duration_min,
+    paceMinKm: paceMinKm?.toString() ?? null,
+    caloriesBurned,
+    notes,
+  }).returning({
+    id: cardioLogs.id,
+    type: cardioLogs.type,
+    distanceKm: cardioLogs.distanceKm,
+    durationMin: cardioLogs.durationMin,
+    paceMinKm: cardioLogs.paceMinKm,
+    caloriesBurned: cardioLogs.caloriesBurned,
+    notes: cardioLogs.notes,
+    createdAt: cardioLogs.createdAt,
+  });
   return { success: true, data: result[0] };
 }
 
@@ -140,11 +194,17 @@ export async function getCardioWeek() {
   const session = await getSession();
   if (!session) throw new Error('Unauthorized');
 
-  const logs = await sql`
-    SELECT id, type, distance_km, duration_min, pace_min_km, calories_burned, notes, created_at
-    FROM cardio_logs
-    WHERE user_id = ${session.userId} AND created_at >= NOW() - INTERVAL '7 days'
-    ORDER BY created_at ASC
-  `;
+  const logs = await db.select({
+    id: cardioLogs.id,
+    type: cardioLogs.type,
+    distanceKm: cardioLogs.distanceKm,
+    durationMin: cardioLogs.durationMin,
+    paceMinKm: cardioLogs.paceMinKm,
+    caloriesBurned: cardioLogs.caloriesBurned,
+    notes: cardioLogs.notes,
+    createdAt: cardioLogs.createdAt,
+  }).from(cardioLogs).where(
+    and(eq(cardioLogs.userId, session.userId), sql`${cardioLogs.createdAt} >= NOW() - INTERVAL '7 days'`)
+  ).orderBy(cardioLogs.createdAt);
   return logs;
 }

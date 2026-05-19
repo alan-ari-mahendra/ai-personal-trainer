@@ -24,7 +24,7 @@ export function HowItWorks() {
       {/* Label */}
       <p
         className="section-dash mb-4 flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+        style={{ fontFamily: "var(--font-mono), monospace" }}
       >
         03 &middot; The Process
       </p>

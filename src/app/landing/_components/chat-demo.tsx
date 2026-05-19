@@ -26,7 +26,7 @@ export function ChatDemo() {
       <div className="text-center">
         <p
           className="mb-4 inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-          style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+          style={{ fontFamily: "var(--font-mono), monospace" }}
         >
           <span className="inline-block h-px w-6 bg-[var(--lime)]" />
           04 &middot; Live Conversation
@@ -80,7 +80,7 @@ export function ChatDemo() {
               <span
                 className="text-[13px] tracking-[0.1em] text-[var(--text)]"
                 style={{
-                  fontFamily: "var(--font-mono-landing), monospace",
+                  fontFamily: "var(--font-mono), monospace",
                   fontWeight: 600,
                 }}
               >
@@ -93,7 +93,7 @@ export function ChatDemo() {
                 />
                 <span
                   className="text-[11px] text-[var(--muted-2)]"
-                  style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+                  style={{ fontFamily: "var(--font-mono), monospace" }}
                 >
                   Online
                 </span>
@@ -137,7 +137,7 @@ export function ChatDemo() {
             </div>
             <span
               className="text-[11px] text-[var(--muted-2)]"
-              style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+              style={{ fontFamily: "var(--font-mono), monospace" }}
             >
               FORGEAI is thinking&hellip;
             </span>

@@ -29,7 +29,7 @@ export function Dashboard() {
       {/* Label */}
       <p
         className="section-dash mb-4 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+        style={{ fontFamily: "var(--font-mono), monospace" }}
       >
         01 · Today&apos;s Overview
       </p>
@@ -57,7 +57,7 @@ export function Dashboard() {
             <div>
               <p
                 className="mb-1 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-                style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+                style={{ fontFamily: "var(--font-mono), monospace" }}
               >
                 Activity
               </p>
@@ -70,7 +70,7 @@ export function Dashboard() {
             </div>
             <span
               className="rounded-full border border-[var(--lime)] px-3 py-1 text-[11px] uppercase tracking-[0.1em] text-[var(--lime)]"
-              style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+              style={{ fontFamily: "var(--font-mono), monospace" }}
             >
               On Track
             </span>
@@ -117,7 +117,7 @@ export function Dashboard() {
                 </span>
                 <span
                   className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted-2)]"
-                  style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+                  style={{ fontFamily: "var(--font-mono), monospace" }}
                 >
                   Daily Goal
                 </span>
@@ -230,7 +230,7 @@ function MiniLabel({ children }: { children: React.ReactNode }) {
   return (
     <p
       className="mb-3 text-[12px] uppercase tracking-[0.15em] text-[var(--muted-2)]"
-      style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+      style={{ fontFamily: "var(--font-mono), monospace" }}
     >
       {children}
     </p>

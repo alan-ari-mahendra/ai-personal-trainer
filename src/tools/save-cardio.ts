@@ -1,4 +1,5 @@
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { cardioLogs } from '@/lib/schema';
 
 interface SaveCardioInput {
   userId: string;
@@ -28,12 +29,15 @@ export async function saveCardioLog(input: SaveCardioInput) {
       input.durationMin * (CAL_PER_MIN[input.type] || 6),
     );
 
-    const result = await sql`
-      INSERT INTO cardio_logs (user_id, type, distance_km, duration_min, pace_min_km, calories_burned, notes)
-      VALUES (${input.userId}, ${input.type}, ${input.distanceKm},
-              ${input.durationMin}, ${paceMinKm}, ${caloriesBurned}, ${input.notes})
-      RETURNING id, type, distance_km, duration_min, pace_min_km, calories_burned
-    `;
+    const result = await db.insert(cardioLogs).values({
+      userId: input.userId,
+      type: input.type,
+      distanceKm: input.distanceKm?.toString() ?? null,
+      durationMin: input.durationMin,
+      paceMinKm: paceMinKm?.toString() ?? null,
+      caloriesBurned,
+      notes: input.notes,
+    }).returning();
 
     return { success: true, data: result[0] };
   } catch (error) {

@@ -47,7 +47,7 @@ export function Hero() {
               className="text-[12px] tracking-[0.12em] uppercase text-[var(--muted)]"
               style={{
                 fontFamily:
-                  "var(--font-mono-landing), monospace",
+                  "var(--font-mono), monospace",
               }}
             >
               AI Coach &middot; Always On
@@ -179,7 +179,7 @@ export function Hero() {
                     className="text-[13px] tracking-[0.1em] text-[var(--text)]"
                     style={{
                       fontFamily:
-                        "var(--font-mono-landing), monospace",
+                        "var(--font-mono), monospace",
                       fontWeight: 600,
                     }}
                   >
@@ -196,7 +196,7 @@ export function Hero() {
                       className="text-[11px] text-[var(--muted-2)]"
                       style={{
                         fontFamily:
-                          "var(--font-mono-landing), monospace",
+                          "var(--font-mono), monospace",
                       }}
                     >
                       Online

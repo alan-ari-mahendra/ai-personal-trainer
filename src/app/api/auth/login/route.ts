@@ -1,4 +1,6 @@
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { users } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { verifyPassword, setSession } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -12,20 +14,21 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password } = loginSchema.parse(body);
 
-    const users = await sql`
-      SELECT id, password_hash FROM users WHERE email = ${email}
-    `;
+    const result = await db.select({
+      id: users.id,
+      passwordHash: users.passwordHash,
+    }).from(users).where(eq(users.email, email));
 
-    if (users.length === 0) {
+    if (result.length === 0) {
       return Response.json({ error: 'Email atau password salah' }, { status: 401 });
     }
 
-    const valid = await verifyPassword(password, users[0].password_hash);
+    const valid = await verifyPassword(password, result[0].passwordHash);
     if (!valid) {
       return Response.json({ error: 'Email atau password salah' }, { status: 401 });
     }
 
-    await setSession(users[0].id);
+    await setSession(result[0].id);
 
     return Response.json({ success: true });
   } catch (error) {

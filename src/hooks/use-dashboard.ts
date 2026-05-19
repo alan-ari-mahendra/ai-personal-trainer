@@ -6,8 +6,8 @@ import { getOverview, getChartData } from '@/lib/actions/analytics';
 interface OverviewData {
   weeklyWorkouts: { count: number; volume: string };
   todayNutrition: { calories: number; protein: string };
-  weeklyCardio: { sessions: number; total_min: number };
-  latestWeight: { weight_kg: string; recorded_at: string } | null;
+  weeklyCardio: { sessions: number; totalMin: number };
+  latestWeight: { weightKg: string; recordedAt: string } | null;
 }
 
 export function useDashboard() {

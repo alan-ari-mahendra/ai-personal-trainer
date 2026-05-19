@@ -1,4 +1,6 @@
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { workouts, meals, cardioLogs, bodyStats } from '@/lib/schema';
+import { eq, and, gte, count, sql } from 'drizzle-orm';
 
 interface GetAnalyticsInput {
   userId: string;
@@ -12,92 +14,49 @@ const WEIGHT_DATE_OFFSETS = {
   month: 30,
 } as const;
 
-// Separate queries per period to avoid dynamic SQL
-async function queryWorkouts(userId: string, period: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dateFilter(createdAt: any, period: string) {
   if (period === 'today') {
-    return sql`
-      SELECT COUNT(*)::int as total_sessions,
-             COALESCE(SUM(sets * reps), 0)::int as total_reps,
-             COALESCE(SUM(sets * reps * COALESCE(weight_kg, 0)), 0)::decimal(12,2) as total_volume,
-             COUNT(DISTINCT exercise_name)::int as unique_exercises,
-             MAX(weight_kg)::decimal(6,2) as heaviest_lift
-      FROM workouts WHERE user_id = ${userId} AND DATE(created_at) = CURRENT_DATE
-    `;
+    return sql`DATE(${createdAt}) = CURRENT_DATE`;
   }
   if (period === 'week') {
-    return sql`
-      SELECT COUNT(*)::int as total_sessions,
-             COALESCE(SUM(sets * reps), 0)::int as total_reps,
-             COALESCE(SUM(sets * reps * COALESCE(weight_kg, 0)), 0)::decimal(12,2) as total_volume,
-             COUNT(DISTINCT exercise_name)::int as unique_exercises,
-             MAX(weight_kg)::decimal(6,2) as heaviest_lift
-      FROM workouts WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '7 days'
-    `;
+    return gte(createdAt, sql`NOW() - INTERVAL '7 days'`);
   }
-  return sql`
-    SELECT COUNT(*)::int as total_sessions,
-           COALESCE(SUM(sets * reps), 0)::int as total_reps,
-           COALESCE(SUM(sets * reps * COALESCE(weight_kg, 0)), 0)::decimal(12,2) as total_volume,
-           COUNT(DISTINCT exercise_name)::int as unique_exercises,
-           MAX(weight_kg)::decimal(6,2) as heaviest_lift
-    FROM workouts WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '30 days'
-  `;
+  return gte(createdAt, sql`NOW() - INTERVAL '30 days'`);
+}
+
+async function queryWorkouts(userId: string, period: string) {
+  return db.select({
+    total_sessions: count(),
+    total_reps: sql<number>`COALESCE(SUM(${workouts.sets} * ${workouts.reps}), 0)::int`,
+    total_volume: sql<string>`COALESCE(SUM(${workouts.sets} * ${workouts.reps} * COALESCE(${workouts.weightKg}, 0)), 0)::decimal(12,2)`,
+    unique_exercises: sql<number>`COUNT(DISTINCT ${workouts.exerciseName})::int`,
+    heaviest_lift: sql<string>`MAX(${workouts.weightKg})::decimal(6,2)`,
+  }).from(workouts).where(
+    and(eq(workouts.userId, userId), dateFilter(workouts.createdAt, period)),
+  );
 }
 
 async function queryNutrition(userId: string, period: string) {
-  if (period === 'today') {
-    return sql`
-      SELECT COUNT(*)::int as total_meals,
-             COALESCE(SUM(calories), 0)::int as total_calories,
-             COALESCE(SUM(protein_g), 0)::decimal(8,1) as total_protein,
-             COALESCE(AVG(calories), 0)::decimal(8,1) as avg_per_meal
-      FROM meals WHERE user_id = ${userId} AND DATE(created_at) = CURRENT_DATE
-    `;
-  }
-  if (period === 'week') {
-    return sql`
-      SELECT COUNT(*)::int as total_meals,
-             COALESCE(SUM(calories), 0)::int as total_calories,
-             COALESCE(SUM(protein_g), 0)::decimal(8,1) as total_protein,
-             COALESCE(AVG(calories), 0)::decimal(8,1) as avg_per_meal
-      FROM meals WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '7 days'
-    `;
-  }
-  return sql`
-    SELECT COUNT(*)::int as total_meals,
-           COALESCE(SUM(calories), 0)::int as total_calories,
-           COALESCE(SUM(protein_g), 0)::decimal(8,1) as total_protein,
-           COALESCE(AVG(calories), 0)::decimal(8,1) as avg_per_meal
-    FROM meals WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '30 days'
-  `;
+  return db.select({
+    total_meals: count(),
+    total_calories: sql<number>`COALESCE(SUM(${meals.calories}), 0)::int`,
+    total_protein: sql<string>`COALESCE(SUM(${meals.proteinG}), 0)::decimal(8,1)`,
+    avg_per_meal: sql<string>`COALESCE(AVG(${meals.calories}), 0)::decimal(8,1)`,
+  }).from(meals).where(
+    and(eq(meals.userId, userId), dateFilter(meals.createdAt, period)),
+  );
 }
 
 async function queryCardio(userId: string, period: string) {
-  if (period === 'today') {
-    return sql`
-      SELECT COUNT(*)::int as total_sessions,
-             COALESCE(SUM(distance_km), 0)::decimal(6,2) as total_distance,
-             COALESCE(SUM(duration_min), 0)::int as total_minutes,
-             COALESCE(SUM(calories_burned), 0)::int as total_calories_burned
-      FROM cardio_logs WHERE user_id = ${userId} AND DATE(created_at) = CURRENT_DATE
-    `;
-  }
-  if (period === 'week') {
-    return sql`
-      SELECT COUNT(*)::int as total_sessions,
-             COALESCE(SUM(distance_km), 0)::decimal(6,2) as total_distance,
-             COALESCE(SUM(duration_min), 0)::int as total_minutes,
-             COALESCE(SUM(calories_burned), 0)::int as total_calories_burned
-      FROM cardio_logs WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '7 days'
-    `;
-  }
-  return sql`
-    SELECT COUNT(*)::int as total_sessions,
-           COALESCE(SUM(distance_km), 0)::decimal(6,2) as total_distance,
-           COALESCE(SUM(duration_min), 0)::int as total_minutes,
-           COALESCE(SUM(calories_burned), 0)::int as total_calories_burned
-    FROM cardio_logs WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '30 days'
-  `;
+  return db.select({
+    total_sessions: count(),
+    total_distance: sql<string>`COALESCE(SUM(${cardioLogs.distanceKm}), 0)::decimal(6,2)`,
+    total_minutes: sql<number>`COALESCE(SUM(${cardioLogs.durationMin}), 0)::int`,
+    total_calories_burned: sql<number>`COALESCE(SUM(${cardioLogs.caloriesBurned}), 0)::int`,
+  }).from(cardioLogs).where(
+    and(eq(cardioLogs.userId, userId), dateFilter(cardioLogs.createdAt, period)),
+  );
 }
 
 export async function getUserAnalytics(input: GetAnalyticsInput) {
@@ -121,37 +80,38 @@ export async function getUserAnalytics(input: GetAnalyticsInput) {
     }
 
     if (metric === 'weight') {
-      const data = await sql`
-        SELECT COUNT(*)::int as entries,
-               MIN(weight_kg)::decimal(5,2) as min_weight,
-               MAX(weight_kg)::decimal(5,2) as max_weight,
-               AVG(weight_kg)::decimal(5,2) as avg_weight,
-               (MAX(weight_kg) - MIN(weight_kg))::decimal(5,2) as change_kg
-        FROM body_stats
-        WHERE user_id = ${userId} AND recorded_at >= CURRENT_DATE - ${offset}
-      `;
+      const data = await db.select({
+        entries: count(),
+        min_weight: sql<string>`MIN(${bodyStats.weightKg})::decimal(5,2)`,
+        max_weight: sql<string>`MAX(${bodyStats.weightKg})::decimal(5,2)`,
+        avg_weight: sql<string>`AVG(${bodyStats.weightKg})::decimal(5,2)`,
+        change_kg: sql<string>`(MAX(${bodyStats.weightKg}) - MIN(${bodyStats.weightKg}))::decimal(5,2)`,
+      }).from(bodyStats).where(
+        and(eq(bodyStats.userId, userId), gte(bodyStats.recordedAt, sql`CURRENT_DATE - ${offset}`)),
+      );
       return { metric: 'weight', period, data: data[0] };
     }
 
     // metric === 'all'
-    const [workouts, nutrition, cardio, weight] = await Promise.all([
+    const [workoutData, nutritionData, cardioData, weightData] = await Promise.all([
       queryWorkouts(userId, period),
       queryNutrition(userId, period),
       queryCardio(userId, period),
-      sql`
-        SELECT AVG(weight_kg)::decimal(5,2) as avg_weight
-        FROM body_stats WHERE user_id = ${userId} AND recorded_at >= CURRENT_DATE - ${offset}
-      `,
+      db.select({
+        avg_weight: sql<string>`AVG(${bodyStats.weightKg})::decimal(5,2)`,
+      }).from(bodyStats).where(
+        and(eq(bodyStats.userId, userId), gte(bodyStats.recordedAt, sql`CURRENT_DATE - ${offset}`)),
+      ),
     ]);
 
     return {
       metric: 'all',
       period,
       data: {
-        workouts: workouts[0],
-        nutrition: nutrition[0],
-        cardio: cardio[0],
-        weight: weight[0],
+        workouts: workoutData[0],
+        nutrition: nutritionData[0],
+        cardio: cardioData[0],
+        weight: weightData[0],
       },
     };
   } catch (error) {

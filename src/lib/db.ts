@@ -1,10 +1,7 @@
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import * as schema from './schema';
 
-let _sql: NeonQueryFunction<false, false>;
+const sql = neon(process.env.DATABASE_URL!);
 
-export function sql(strings: TemplateStringsArray, ...values: unknown[]) {
-  if (!_sql) {
-    _sql = neon(process.env.DATABASE_URL!);
-  }
-  return _sql(strings, ...values);
-}
+export const db = drizzle({ client: sql, schema });

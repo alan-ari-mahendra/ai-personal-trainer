@@ -2,7 +2,9 @@ import { getGroq, GROQ_MODEL, SYSTEM_PROMPT, ONBOARDING_PROMPT } from '@/lib/gro
 import { getToolDefinitions } from '@/lib/tool-definitions';
 import { executeToolCall } from '@/lib/tool-executor';
 import { getUserId } from '@/lib/api-auth';
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { chatHistory } from '@/lib/schema';
+import { eq, desc } from 'drizzle-orm';
 
 type ChatMessage = {
   role: string;
@@ -38,10 +40,11 @@ export async function POST(req: Request) {
 
   // Only save to chat_history in normal chat mode
   if (!isOnboarding) {
-    await sql`
-      INSERT INTO chat_history (user_id, role, content)
-      VALUES (${userId}, 'user', ${message})
-    `;
+    await db.insert(chatHistory).values({
+      userId,
+      role: 'user',
+      content: message,
+    });
   }
 
   const messages: ChatMessage[] = [
@@ -50,15 +53,17 @@ export async function POST(req: Request) {
 
   if (!isOnboarding) {
     // Fetch last 20 messages for context
-    const history = await sql`
-      SELECT role, content FROM chat_history
-      WHERE user_id = ${userId}
-      ORDER BY created_at DESC LIMIT 20
-    `;
+    const history = await db.select({
+      role: chatHistory.role,
+      content: chatHistory.content,
+    }).from(chatHistory)
+      .where(eq(chatHistory.userId, userId))
+      .orderBy(desc(chatHistory.createdAt))
+      .limit(20);
     messages.push(
       ...history.reverse().map((h) => ({
-        role: h.role as string,
-        content: h.content as string,
+        role: h.role,
+        content: h.content,
       })),
     );
   }
@@ -77,10 +82,12 @@ export async function POST(req: Request) {
 
         // Only save to chat_history in normal chat mode
         if (!isOnboarding) {
-          await sql`
-            INSERT INTO chat_history (user_id, role, content, model_used)
-            VALUES (${userId}, 'assistant', ${finalContent}, ${GROQ_MODEL})
-          `;
+          await db.insert(chatHistory).values({
+            userId,
+            role: 'assistant',
+            content: finalContent,
+            modelUsed: GROQ_MODEL,
+          });
         }
 
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));

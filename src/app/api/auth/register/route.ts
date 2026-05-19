@@ -1,4 +1,6 @@
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { users } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { hashPassword, setSession } from '@/lib/auth';
 import { z } from 'zod';
 
@@ -13,18 +15,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, password, displayName } = registerSchema.parse(body);
 
-    const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
     if (existing.length > 0) {
       return Response.json({ error: 'Email sudah terdaftar' }, { status: 409 });
     }
 
     const passwordHash = await hashPassword(password);
 
-    const result = await sql`
-      INSERT INTO users (email, password_hash, display_name)
-      VALUES (${email}, ${passwordHash}, ${displayName ?? null})
-      RETURNING id
-    `;
+    const result = await db.insert(users).values({
+      email,
+      passwordHash,
+      displayName: displayName ?? null,
+    }).returning({ id: users.id });
 
     await setSession(result[0].id);
 

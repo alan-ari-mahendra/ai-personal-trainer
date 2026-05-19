@@ -1,7 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { users } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 const COOKIE_NAME = 'apt_session';
@@ -67,9 +69,12 @@ export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
 
-  const users = await sql`
-    SELECT id, email, display_name, goal, activity_level
-    FROM users WHERE id = ${session.userId}
-  `;
-  return users[0] ?? null;
+  const result = await db.select({
+    id: users.id,
+    email: users.email,
+    displayName: users.displayName,
+    goal: users.goal,
+    activityLevel: users.activityLevel,
+  }).from(users).where(eq(users.id, session.userId));
+  return result[0] ?? null;
 }

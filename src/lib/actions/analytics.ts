@@ -1,7 +1,9 @@
 'use server';
 
 import { getSession } from '@/lib/auth';
-import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
+import { workouts, meals, cardioLogs, bodyStats } from '@/lib/schema';
+import { eq, and, sql, desc } from 'drizzle-orm';
 
 export async function getOverview() {
   const session = await getSession();
@@ -9,26 +11,28 @@ export async function getOverview() {
   const userId = session.userId;
 
   const [workoutStats, nutritionStats, cardioStats, latestWeight] = await Promise.all([
-    sql`
-      SELECT COUNT(*)::int as count,
-             COALESCE(SUM(sets * reps * COALESCE(weight_kg, 0)), 0)::decimal(12,2) as volume
-      FROM workouts WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '7 days'
-    `,
-    sql`
-      SELECT COALESCE(SUM(calories), 0)::int as calories,
-             COALESCE(SUM(protein_g), 0)::decimal(8,1) as protein
-      FROM meals WHERE user_id = ${userId} AND DATE(created_at) = CURRENT_DATE
-    `,
-    sql`
-      SELECT COUNT(*)::int as sessions,
-             COALESCE(SUM(duration_min), 0)::int as total_min
-      FROM cardio_logs WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '7 days'
-    `,
-    sql`
-      SELECT weight_kg, recorded_at
-      FROM body_stats WHERE user_id = ${userId}
-      ORDER BY recorded_at DESC LIMIT 1
-    `,
+    db.select({
+      count: sql<number>`COUNT(*)::int`,
+      volume: sql<string>`COALESCE(SUM(${workouts.sets} * ${workouts.reps} * COALESCE(${workouts.weightKg}, 0)), 0)::decimal(12,2)`,
+    }).from(workouts).where(
+      and(eq(workouts.userId, userId), sql`${workouts.createdAt} >= NOW() - INTERVAL '7 days'`)
+    ),
+    db.select({
+      calories: sql<number>`COALESCE(SUM(${meals.calories}), 0)::int`,
+      protein: sql<string>`COALESCE(SUM(${meals.proteinG}), 0)::decimal(8,1)`,
+    }).from(meals).where(
+      and(eq(meals.userId, userId), sql`DATE(${meals.createdAt}) = CURRENT_DATE`)
+    ),
+    db.select({
+      sessions: sql<number>`COUNT(*)::int`,
+      totalMin: sql<number>`COALESCE(SUM(${cardioLogs.durationMin}), 0)::int`,
+    }).from(cardioLogs).where(
+      and(eq(cardioLogs.userId, userId), sql`${cardioLogs.createdAt} >= NOW() - INTERVAL '7 days'`)
+    ),
+    db.select({
+      weightKg: bodyStats.weightKg,
+      recordedAt: bodyStats.recordedAt,
+    }).from(bodyStats).where(eq(bodyStats.userId, userId)).orderBy(desc(bodyStats.recordedAt)).limit(1),
   ]);
 
   return {
@@ -46,26 +50,28 @@ export async function getChartData(type: string, days: number) {
   const safeDays = Math.min(days, 365);
 
   if (type === 'weight') {
-    return sql`
-      SELECT recorded_at as date, weight_kg::decimal(5,2) as value
-      FROM body_stats WHERE user_id = ${userId} AND recorded_at >= CURRENT_DATE - ${safeDays}
-      ORDER BY recorded_at ASC
-    `;
+    return db.select({
+      date: bodyStats.recordedAt,
+      value: sql<string>`${bodyStats.weightKg}::decimal(5,2)`,
+    }).from(bodyStats).where(
+      and(eq(bodyStats.userId, userId), sql`${bodyStats.recordedAt} >= CURRENT_DATE - ${safeDays}`)
+    ).orderBy(bodyStats.recordedAt);
   }
 
   if (type === 'calories') {
-    return sql`
-      SELECT DATE(created_at)::text as date, COALESCE(SUM(calories), 0)::int as value
-      FROM meals WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '1 day' * ${safeDays}
-      GROUP BY DATE(created_at) ORDER BY date ASC
-    `;
+    return db.select({
+      date: sql<string>`DATE(${meals.createdAt})::text`,
+      value: sql<number>`COALESCE(SUM(${meals.calories}), 0)::int`,
+    }).from(meals).where(
+      and(eq(meals.userId, userId), sql`${meals.createdAt} >= NOW() - INTERVAL '1 day' * ${safeDays}`)
+    ).groupBy(sql`DATE(${meals.createdAt})`).orderBy(sql`DATE(${meals.createdAt})`);
   }
 
   // Default: workout volume
-  return sql`
-    SELECT DATE(created_at)::text as date,
-           COALESCE(SUM(sets * reps * COALESCE(weight_kg, 0)), 0)::decimal(12,2) as value
-    FROM workouts WHERE user_id = ${userId} AND created_at >= NOW() - INTERVAL '1 day' * ${safeDays}
-    GROUP BY DATE(created_at) ORDER BY date ASC
-  `;
+  return db.select({
+    date: sql<string>`DATE(${workouts.createdAt})::text`,
+    value: sql<string>`COALESCE(SUM(${workouts.sets} * ${workouts.reps} * COALESCE(${workouts.weightKg}, 0)), 0)::decimal(12,2)`,
+  }).from(workouts).where(
+    and(eq(workouts.userId, userId), sql`${workouts.createdAt} >= NOW() - INTERVAL '1 day' * ${safeDays}`)
+  ).groupBy(sql`DATE(${workouts.createdAt})`).orderBy(sql`DATE(${workouts.createdAt})`);
 }

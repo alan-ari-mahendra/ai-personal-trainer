@@ -33,7 +33,7 @@ export function Testimonials() {
       {/* Label */}
       <p
         className="section-dash mb-4 flex items-center gap-3 text-[12px] uppercase tracking-[0.25em] text-[var(--muted)]"
-        style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+        style={{ fontFamily: "var(--font-mono), monospace" }}
       >
         05 &middot; Social Proof
       </p>
@@ -93,7 +93,7 @@ export function Testimonials() {
                 </p>
                 <p
                   className="text-[11px] uppercase text-[var(--muted-2)]"
-                  style={{ fontFamily: "var(--font-mono-landing), monospace" }}
+                  style={{ fontFamily: "var(--font-mono), monospace" }}
                 >
                   {t.role}
                 </p>
