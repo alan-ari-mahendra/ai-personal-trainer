@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getWorkoutToday } from '@/lib/actions/track';
 
 interface WorkoutEntry {
   id: number;
@@ -25,10 +26,9 @@ export function WorkoutHistory({ refreshKey }: WorkoutHistoryProps) {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/track/workout/today', { credentials: 'include' })
-      .then((res) => res.json())
+    getWorkoutToday()
       .then((res) => {
-        setWorkouts(res.data ?? []);
+        setWorkouts((res.data ?? []) as WorkoutEntry[]);
         setTotalVolume(res.totalVolume ?? 0);
         setLoading(false);
       })

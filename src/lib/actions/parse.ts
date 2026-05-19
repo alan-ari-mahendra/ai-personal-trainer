@@ -1,5 +1,7 @@
+'use server';
+
+import { getSession } from '@/lib/auth';
 import { getGroq, GROQ_MODEL } from '@/lib/groq';
-import { getUserId } from '@/lib/api-auth';
 import type { ParseType } from '@/types/api';
 
 function getMealTypeHint(): string {
@@ -78,56 +80,29 @@ Output JSON format:
 }`,
 };
 
-export async function POST(req: Request) {
-  try {
-    getUserId(req); // auth check
+export async function parseInput(type: ParseType, input: string) {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
 
-    const body = await req.json();
-    const { type, input } = body as { type?: ParseType; input?: string };
-
-    if (!type || !input || !PARSE_PROMPTS[type]) {
-      return Response.json(
-        { error: 'type and input are required' },
-        { status: 400 },
-      );
-    }
-
-    const systemPrompt = PARSE_PROMPTS[type].replace(
-      'MEAL_TYPE_HINT',
-      getMealTypeHint(),
-    );
-
-    const groq = getGroq();
-    const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: input },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.3,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      return Response.json(
-        { error: 'AI returned empty response' },
-        { status: 502 },
-      );
-    }
-
-    const parsed = JSON.parse(content);
-    return Response.json(parsed);
-  } catch (error) {
-    console.error('Parse API error:', error);
-
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    return Response.json(
-      { error: 'Failed to parse input' },
-      { status: 500 },
-    );
+  if (!input?.trim() || !PARSE_PROMPTS[type]) {
+    throw new Error('type and input required');
   }
+
+  const systemPrompt = PARSE_PROMPTS[type].replace('MEAL_TYPE_HINT', getMealTypeHint());
+
+  const groq = getGroq();
+  const completion = await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: input.trim() },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.3,
+  });
+
+  const content = completion.choices[0]?.message?.content;
+  if (!content) throw new Error('AI returned empty response');
+
+  return JSON.parse(content);
 }

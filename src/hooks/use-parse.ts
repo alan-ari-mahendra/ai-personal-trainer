@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { parseInput } from '@/lib/actions/parse';
 import type { ParseType, ParseResult } from '@/types/api';
 
 interface UseParseReturn<T extends ParseResult> {
@@ -26,19 +27,7 @@ export function useParse<T extends ParseResult>(type: ParseType): UseParseReturn
       setError(null);
 
       try {
-        const res = await fetch('/api/parse', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, input: trimmed }),
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body.error || `Server error: ${res.status}`);
-        }
-
-        const data = (await res.json()) as T;
+        const data = (await parseInput(type, trimmed)) as T;
         return data;
       } catch (err) {
         const msg =

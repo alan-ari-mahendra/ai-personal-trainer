@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getNutritionToday } from "@/lib/actions/track";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -46,10 +47,8 @@ export function NutritionHistory({ refreshKey }: NutritionHistoryProps) {
     async function fetchHistory() {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/track/nutrition/today");
-        if (!res.ok) throw new Error("Fetch failed");
-        const json = await res.json();
-        if (!cancelled) setGrouped(json.data);
+        const data = await getNutritionToday();
+        if (!cancelled) setGrouped(data as Record<string, NutritionEntry[]>);
       } catch {
         if (!cancelled) setGrouped(null);
       } finally {

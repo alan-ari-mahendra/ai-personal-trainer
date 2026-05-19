@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { saveNutrition } from "@/lib/actions/track";
 import type { NutritionItem, NutritionParseResult } from "@/types/api";
 
 interface NutritionFormProps {
@@ -83,13 +84,10 @@ export function NutritionForm({ initialData, onSave }: NutritionFormProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch("/api/track/nutrition", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meal_type: mealType, items }),
-      });
-      if (!res.ok) throw new Error("Save failed");
-      onSave();
+      const result = await saveNutrition({ meal_type: mealType, items });
+      if (result.success) {
+        onSave();
+      }
     } catch {
       // TODO: surface error to user
     } finally {

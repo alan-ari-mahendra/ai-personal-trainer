@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { saveWorkout } from '@/lib/actions/track';
 import type { WorkoutParseResult, WorkoutExercise } from '@/types/api';
 
 interface WorkoutFormProps {
@@ -63,13 +64,8 @@ export function WorkoutForm({ initialData, onSave }: WorkoutFormProps) {
 
     setSaving(true);
     try {
-      const res = await fetch('/api/track/workout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exercises: valid }),
-        credentials: 'include',
-      });
-      if (res.ok) {
+      const result = await saveWorkout({ exercises: valid });
+      if (result.success) {
         setExercises([]);
         onSave();
       }

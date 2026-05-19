@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getOverview, getChartData } from '@/lib/actions/analytics';
 
 interface OverviewData {
   weeklyWorkouts: { count: number; volume: string };
@@ -14,10 +15,9 @@ export function useDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/analytics/overview', { credentials: 'include' })
-      .then((res) => res.json())
+    getOverview()
       .then((data) => {
-        setOverview(data);
+        setOverview(data as OverviewData);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -31,12 +31,9 @@ export function useChartData(type: string, days: number) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/analytics/chart?type=${type}&days=${days}`, {
-      credentials: 'include',
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setData(res.data ?? []);
+    getChartData(type, days)
+      .then((data) => {
+        setData((data ?? []) as { date: string; value: number }[]);
         setLoading(false);
       })
       .catch(() => setLoading(false));
