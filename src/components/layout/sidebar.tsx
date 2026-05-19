@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, BarChart3, Settings, LogOut } from 'lucide-react';
+import { MessageSquare, BarChart3, Settings, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
   { label: 'Chat', href: '/chat', icon: MessageSquare },
   { label: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+  { label: 'Profil', href: '/profile', icon: User },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 

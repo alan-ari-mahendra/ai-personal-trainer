@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 const pageTitles: Record<string, string> = {
   '/chat': 'Chat',
   '/dashboard': 'Dashboard',
+  '/profile': 'Profil',
   '/settings': 'Settings',
 };
 

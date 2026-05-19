@@ -51,6 +51,48 @@ export async function saveOnboarding(data: OnboardingData) {
   return { success: true };
 }
 
+export async function getProfile() {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+
+  const result = await db.select({
+    email: users.email,
+    displayName: users.displayName,
+    gender: users.gender,
+    age: users.age,
+    heightCm: users.heightCm,
+    weightKg: users.weightKg,
+    goal: users.goal,
+    activityLevel: users.activityLevel,
+    exerciseHistory: users.exerciseHistory,
+    injuries: users.injuries,
+    address: users.address,
+  }).from(users).where(eq(users.id, session.userId));
+
+  return result[0] ?? null;
+}
+
+export async function updateProfile(data: OnboardingData) {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+
+  await db.update(users).set({
+    displayName: data.display_name,
+    gender: data.gender,
+    age: data.age,
+    heightCm: data.height_cm?.toString() ?? null,
+    weightKg: data.weight_kg?.toString() ?? null,
+    goal: data.goal,
+    activityLevel: data.activity_level,
+    exerciseHistory: data.exercise_history,
+    injuries: data.injuries,
+    address: data.address,
+    updatedAt: new Date(),
+  }).where(eq(users.id, session.userId));
+
+  return { success: true };
+}
+
 export async function checkOnboarding(): Promise<boolean> {
   const session = await getSession();
   if (!session) return false;
